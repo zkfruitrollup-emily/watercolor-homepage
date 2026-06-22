@@ -74,6 +74,30 @@ const NAV_ITEMS = [
     revealDelay: '0s',
     revealThreshold: 0.65, // appears when user has scrolled well into the page
   },
+  {
+    // Blank wall just right of the picture frame, directly above the couch
+    // back cushions. Placeholder — no destination yet.
+    id: 'about',
+    label: 'about',
+    href: '#',
+    imgX: 460, imgY: 390,
+    pillW: 95,  pillH: 33,
+    zoneBox: [430, 360, 160, 110] as [number, number, number, number],
+    revealDelay: '0.1s',
+    revealThreshold: 0.1,
+  },
+  {
+    // Overlays the framed abstract painting on the wall. Placeholder — no
+    // destination yet.
+    id: 'projects',
+    label: 'projects',
+    href: '#',
+    imgX: 266, imgY: 176,
+    pillW: 128, pillH: 33,
+    zoneBox: [215, 20, 230, 345] as [number, number, number, number],
+    revealDelay: '0.2s',
+    revealThreshold: 0.2,
+  },
 ]
 
 // ─── Shader video overlays ─────────────────────────────────────────────────────

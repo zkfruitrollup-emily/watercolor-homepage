@@ -14,7 +14,7 @@ export default async function ThoughtsPage() {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', background: '#fff' }}>
+      <div style={{ position: 'relative', minHeight: '100vh', background: '#fff' }}>
         {/* ── Sticky nav ─────────────────────────────────────────────── */}
         <nav
           style={{
@@ -30,16 +30,45 @@ export default async function ThoughtsPage() {
             background: '#fff',
           }}
         >
-          <Link
-            href="/"
-            className="stix"
-            style={{ fontSize: 18, letterSpacing: '0.08em', color: '#111' }}
-          >
-            thoughts
+          <Link href="/" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span
+              className="stix"
+              style={{ fontSize: 18, letterSpacing: '0.08em', color: '#111', display: 'block' }}
+            >
+              house of zero
+            </span>
+            <span
+              style={{
+                fontFamily: 'Georgia',
+                fontSize: 11,
+                color: '#AAAAAA',
+                letterSpacing: '0.04em',
+                display: 'block',
+              }}
+            >
+              thoughts
+            </span>
           </Link>
 
           <WriteButton />
         </nav>
+
+        {/* ── Decorative hanging plant — tucks behind the nav, hangs in the
+              right-side gutter next to the heading. Drop the exported PNG
+              from the Paper mockup at public/images/potted-plant.png. ── */}
+        <img
+          src="/images/potted-plant.png"
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 64,
+            width: 240,
+            height: 'auto',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
 
         {/* ── Page heading ────────────────────────────────────────────── */}
         <div style={{ padding: '80px 80px 40px' }}>

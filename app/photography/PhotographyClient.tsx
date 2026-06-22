@@ -335,7 +335,7 @@ export default function PhotographyClient({ photos }: { photos: Photo[] }) {
               className="stix"
               style={{ fontSize: 13, letterSpacing: '0.06em', color: '#111', display: 'block' }}
             >
-              photography
+              house of zero
             </span>
             <span
               style={{
@@ -346,7 +346,7 @@ export default function PhotographyClient({ photos }: { photos: Photo[] }) {
                 display: 'block',
               }}
             >
-              house of zero
+              photography
             </span>
           </Link>
         </div>
