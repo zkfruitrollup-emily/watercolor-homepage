@@ -91,7 +91,7 @@ const NAV_ITEMS = [
     // destination yet.
     id: 'projects',
     label: 'projects',
-    href: '#',
+    href: '/projects',
     imgX: 266, imgY: 176,
     pillW: 128, pillH: 33,
     zoneBox: [215, 20, 230, 345] as [number, number, number, number],
