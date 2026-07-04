@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Photo } from '@/lib/photos'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 // ─── Upload password ─────────────────────────────────────────────────────────
 // Client-side check is just a fast UI gate — app/api/photos/route.ts
@@ -122,7 +123,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div style={{ width: 480, padding: '48px 0' }}>
+      <div style={{ width: 'min(480px, 88vw)', padding: '48px 0' }}>
         {step === 'auth' && (
           <form onSubmit={handleAuth}>
             <p style={{ fontFamily: 'Georgia', fontSize: 14, marginBottom: 20, color: '#555' }}>
@@ -265,6 +266,7 @@ function UploadModal({ onClose }: { onClose: () => void }) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 export default function PhotographyClient({ photos }: { photos: Photo[] }) {
+  const isMobile = useIsMobile()
   const [current, setCurrent] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -282,7 +284,9 @@ export default function PhotographyClient({ photos }: { photos: Photo[] }) {
   const next = useCallback(() => goTo(Math.min(total - 1, current + 1)), [current, total, goTo])
 
   // Scroll wheel: scroll up = next (slide left), scroll down = prev (slide right)
+  // Mobile uses a plain vertical scroll, so hijacking the wheel would break it.
   useEffect(() => {
+    if (isMobile) return
     let cooldown = false
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
@@ -294,7 +298,7 @@ export default function PhotographyClient({ photos }: { photos: Photo[] }) {
     }
     window.addEventListener('wheel', handleWheel, { passive: false })
     return () => window.removeEventListener('wheel', handleWheel)
-  }, [next, prev, isAnimating])
+  }, [next, prev, isAnimating, isMobile])
 
   // Arrow keys
   useEffect(() => {
@@ -307,6 +311,87 @@ export default function PhotographyClient({ photos }: { photos: Photo[] }) {
   }, [next, prev])
 
   const photo = photos[current]
+
+  // ── Mobile: one simple vertical scroll — landscape shots wide, portraits
+  //    tall, captions underneath. The desktop slideshow stays as-is. ──
+  if (isMobile) {
+    return (
+      <>
+        <div style={{ minHeight: '100vh', background: '#fff' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px 20px',
+            }}
+          >
+            <Link href="/" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <span className="stix" style={{ fontSize: 15, letterSpacing: '0.06em', color: '#111' }}>
+                house of zero
+              </span>
+              <span style={{ fontFamily: 'Georgia', fontSize: 10, color: '#AAAAAA', letterSpacing: '0.04em' }}>
+                photography
+              </span>
+            </Link>
+            <button
+              onClick={() => setUploadOpen(true)}
+              style={{
+                fontFamily: 'Georgia',
+                fontSize: 11,
+                background: 'none',
+                border: '1px solid #000',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                letterSpacing: '0.03em',
+              }}
+            >
+              ↑ upload
+            </button>
+          </div>
+
+          <main
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 28,
+              padding: '8px 20px 60px',
+            }}
+          >
+            {photos.map((p) => (
+              <figure key={p.id} style={{ margin: 0 }}>
+                <div
+                  style={{
+                    width: '100%',
+                    aspectRatio: p.orientation === 'portrait' ? '4 / 5' : '4 / 3',
+                    backgroundImage: `url(${p.src})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#EFEFEF',
+                  }}
+                />
+                {p.caption && (
+                  <figcaption
+                    style={{
+                      marginTop: 8,
+                      fontFamily: 'Georgia',
+                      fontStyle: 'italic',
+                      fontSize: 12,
+                      color: '#999',
+                    }}
+                  >
+                    {p.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </main>
+        </div>
+
+        {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
+      </>
+    )
+  }
 
   return (
     <>

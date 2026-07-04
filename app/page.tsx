@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Dithering, GodRays } from '@paper-design/shaders-react'
+import { useIsMobile } from '@/lib/useIsMobile'
 
 // ─── Source image dimensions ──────────────────────────────────────────────────
 const IMG_W = 1452
@@ -140,8 +141,161 @@ const DISCO_BOX = { imgX: 952, imgY: 65, imgW: 336, imgH: 230 }
 // Set to true to see videos without blend modes + red outlines for positioning
 const DEBUG_VIDEOS = false
 
+// ─── Mobile: swipe-to-explore ──────────────────────────────────────────────────
+// The painting fills the phone's full height (uncropped vertically) and
+// overflows horizontally — swiping pans across the room like a panorama.
+// All nav pills sit spread out on the left-hand side of the opening view;
+// a small arrow chip on the right invites the swipe, which reveals the
+// Welcome + about boxes over the couch. Coordinates are image pixels, same
+// system as NAV_ITEMS. Shaders are skipped on mobile for performance.
+// Scattered across the full opening view — from the left edge out to the
+// coffee cups (image x ≈ 450) — dodging the lamp shade and framed painting.
+const MOBILE_NAV = [
+  { id: 'projects',  label: 'projects',        href: '/projects',    imgX: 48,  imgY: 110 },
+  { id: 'blog',      label: 'blog',            href: '/thoughts',    imgX: 330, imgY: 70 },
+  { id: 'photo',     label: 'photo',           href: '/photography', imgX: 56,  imgY: 430 },
+  { id: 'offbeat',   label: 'offbeat\ngreets', href: '#',            imgX: 300, imgY: 430 },
+  { id: 'portfolio', label: 'portfolio',       href: '#',            imgX: 150, imgY: 556 },
+  { id: 'about',     label: 'about',           href: '#',            imgX: 382, imgY: 620 },
+  { id: 'tiktok',    label: 'tiktok',          href: '#',            imgX: 250, imgY: 930 },
+]
+
+// About-the-site copy — Emily fills this in.
+const MOBILE_ABOUT_TEXT =
+  'welcome to my house — part portfolio, part thought-dumping ground. ' +
+  'poke around the room: everything clickable lives inside the painting.'
+
+function MobileHome() {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [hasSwiped, setHasSwiped] = useState(false)
+
+  const handleScroll = () => {
+    const el = scrollerRef.current
+    if (!el) return
+    if (el.scrollLeft > 30) setHasSwiped(true)
+  }
+
+  return (
+    <div style={{ position: 'relative', height: '100dvh', overflow: 'hidden' }}>
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        style={{
+          height: '100%',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {/* Inner strip matches the painting's aspect ratio, so ix()/iy()
+            percentages line up exactly like on desktop. */}
+        <div
+          style={{
+            position: 'relative',
+            height: '100%',
+            width: `calc(100dvh * ${(IMG_W / IMG_H).toFixed(4)})`,
+            backgroundImage: 'url(/images/watercolor-room.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {MOBILE_NAV.map((item) => {
+            const hasLink = item.href !== '#'
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={hasLink ? undefined : (e) => e.preventDefault()}
+                className="stix"
+                style={{
+                  position: 'absolute',
+                  left: ix(item.imgX),
+                  top: iy(item.imgY),
+                  background: '#ffffff',
+                  padding: '6px 14px',
+                  fontSize: 14,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2,
+                  color: '#000',
+                  whiteSpace: item.id === 'offbeat' ? 'pre' : 'nowrap',
+                  textAlign: 'center',
+                  zIndex: 15,
+                }}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+
+          {/* ── Welcome + about — revealed by swiping right ── */}
+          <div
+            className="stix"
+            style={{
+              position: 'absolute',
+              left: ix(1020),
+              top: iy(300),
+              background: '#ffffff',
+              padding: '8px 18px',
+              fontSize: 17,
+              letterSpacing: '0.02em',
+              color: '#000',
+              zIndex: 15,
+            }}
+          >
+            Welcome
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              left: ix(970),
+              top: iy(380),
+              width: ix(370),
+              background: '#ffffff',
+              padding: '12px 16px',
+              fontFamily: 'Georgia',
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: '#222',
+              zIndex: 15,
+            }}
+          >
+            {MOBILE_ABOUT_TEXT}
+          </div>
+        </div>
+      </div>
+
+      {/* Title stays pinned while the room pans underneath */}
+      <div style={{ position: 'absolute', top: 18, left: 16, zIndex: 20, pointerEvents: 'none' }}>
+        <span className="stix" style={{ fontSize: 15, letterSpacing: '0.06em', color: '#111' }}>
+          house of zero
+        </span>
+      </div>
+
+      {/* Arrow chip on the right edge — fades once the user starts exploring */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 12,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          background: '#ffffff',
+          padding: '8px 12px',
+          zIndex: 20,
+          pointerEvents: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          opacity: hasSwiped ? 0 : 1,
+          transition: 'opacity 0.6s ease',
+        }}
+      >
+        <span className="stix" style={{ fontSize: 16, color: '#111' }}>→</span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ───────────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const isMobile = useIsMobile()
   const [scrollProgress, setScrollProgress] = useState(0)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -160,6 +314,8 @@ export default function HomePage() {
 
   const isVisible = (item: typeof NAV_ITEMS[0]) =>
     scrollProgress >= item.revealThreshold || hoveredId === item.id
+
+  if (isMobile) return <MobileHome />
 
   return (
     // Container sized to the image's natural display height so the full painting

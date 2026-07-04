@@ -24,7 +24,7 @@ export default async function ThoughtsPage() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '0 80px',
+            padding: '0 clamp(20px, 6vw, 80px)',
             height: 65,
             borderBottom: '1px solid #E8E8E8',
             background: '#fff',
@@ -62,8 +62,8 @@ export default async function ThoughtsPage() {
           style={{
             position: 'absolute',
             top: 0,
-            right: 64,
-            width: 240,
+            right: 'clamp(16px, 5vw, 64px)',
+            width: 'clamp(120px, 26vw, 240px)',
             height: 'auto',
             zIndex: 1,
             pointerEvents: 'none',
@@ -71,17 +71,17 @@ export default async function ThoughtsPage() {
         />
 
         {/* ── Page heading ────────────────────────────────────────────── */}
-        <div style={{ padding: '80px 80px 40px' }}>
+        <div style={{ padding: '80px clamp(20px, 6vw, 80px) 40px' }}>
           <h1
             className="stix"
-            style={{ fontSize: 96, fontWeight: 400, lineHeight: 1, color: '#111' }}
+            style={{ fontSize: 'clamp(52px, 13vw, 96px)', fontWeight: 400, lineHeight: 1, color: '#111' }}
           >
             Thoughts
           </h1>
         </div>
 
         {/* ── Post list ───────────────────────────────────────────────── */}
-        <main style={{ padding: '0 80px', paddingBottom: 120 }}>
+        <main style={{ padding: '0 clamp(20px, 6vw, 80px)', paddingBottom: 120 }}>
           {sortedPosts.length === 0 ? (
             // Empty state — hidden from readers, just structural placeholder
             <div style={{ paddingTop: 60 }} />
@@ -90,7 +90,8 @@ export default async function ThoughtsPage() {
               <article
                 key={post.id}
                 style={{
-                  width: 680,
+                  width: '100%',
+                  maxWidth: 680,
                   paddingTop: i === 0 ? 60 : 0,
                   paddingBottom: 80,
                   borderBottom: i < sortedPosts.length - 1 ? '1px solid #E8E8E8' : 'none',
@@ -149,7 +150,7 @@ export default async function ThoughtsPage() {
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer
           style={{
-            padding: '32px 80px',
+            padding: '32px clamp(20px, 6vw, 80px)',
             borderTop: '1px solid #E8E8E8',
             fontFamily: 'Georgia',
             fontSize: 13,
