@@ -26,3 +26,39 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ─── Homepage: watercolor bloom-in for nav pills ───────────────────────────
+   One-shot reveal that reads like ink soaking into paper: soft blur → sharp,
+   a small rise, gentle overshoot-free ease. Applied with a per-pill
+   animation-delay for the left-to-right stagger. */
+@keyframes pill-bloom {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.94); filter: blur(7px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* The painting itself "develops" on load — barely-there, just enough that
+   the page doesn't slam in. Opacity only: a transform here would put the
+   full-page background on its own compositing layer for no benefit. */
+@keyframes room-develop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Projects: frames being hung on the wall, one by one ───────────────────
+   Entry animation lives on an outer wrapper (opacity + drop only); the tilt
+   and hover-straighten transition live on an inner layer so they never fight
+   the animation's fill mode. */
+@keyframes frame-hang {
+  0%   { opacity: 0; transform: translateY(-22px); }
+  60%  { opacity: 1; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
