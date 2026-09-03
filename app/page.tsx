@@ -23,57 +23,19 @@ const iy = (px: number) => `${(px / IMG_H * 100).toFixed(3)}%`
 // imgX/imgY:    top-left of the pill, in image pixels (from Paper)
 // pillW/pillH:  pill size in image pixels
 // zoneBox:      clickable hit area in image pixels [x, y, w, h]
-// revealDelay:  CSS transition-delay for left-to-right stagger
+// order:        position in the left-to-right bloom-in stagger on load
+// belowFold:    pill sits low in the painting — reveal it when it scrolls
+//               into view instead of on load (one-shot, never re-hides)
 const NAV_ITEMS = [
   {
-    id: 'offbeat',
-    label: 'offbeat\ngreets',
-    href: '#',
-    imgX: 516,  imgY: 326,
-    pillW: 133, pillH: 50,
-    zoneBox: [350, 240, 260, 220] as [number, number, number, number],
-    revealDelay: '0s',
-    revealThreshold: 0.05,
-  },
-  {
-    id: 'portfolio',
-    label: 'portfolio',
-    href: '#',
-    imgX: 711,  imgY: 322,
-    pillW: 130, pillH: 33,
-    zoneBox: [580, 240, 250, 220] as [number, number, number, number],
-    revealDelay: '0.15s',
-    revealThreshold: 0.15,
-  },
-  {
-    id: 'blog',
-    label: 'blog',
-    href: '/thoughts',
-    imgX: 976,  imgY: 119,
-    pillW: 95,  pillH: 33,
-    zoneBox: [900, 0, 320, 480] as [number, number, number, number],
-    revealDelay: '0.3s',
-    revealThreshold: 0.25,
-  },
-  {
-    id: 'photo',
-    label: 'photo',
-    href: '/photography',
-    imgX: 1324, imgY: 187,
-    pillW: 95,  pillH: 33,
-    zoneBox: [1200, 80, 252, 570] as [number, number, number, number],
-    revealDelay: '0.45s',
-    revealThreshold: 0.35,
-  },
-  {
-    id: 'tiktok',
-    label: 'tiktok',
-    href: '#',
-    imgX: 1117, imgY: 870, // yoga mat center — raised from 1002 so it's visible
-    pillW: 95,  pillH: 33,
-    zoneBox: [900, 820, 330, 240] as [number, number, number, number],
-    revealDelay: '0s',
-    revealThreshold: 0.65, // appears when user has scrolled well into the page
+    // Overlays the framed abstract painting on the wall.
+    id: 'projects',
+    label: 'projects',
+    href: '/projects',
+    imgX: 266, imgY: 176,
+    pillW: 128, pillH: 33,
+    zoneBox: [215, 20, 230, 345] as [number, number, number, number],
+    order: 0,
   },
   {
     // Blank wall just right of the picture frame, directly above the couch
@@ -84,22 +46,60 @@ const NAV_ITEMS = [
     imgX: 460, imgY: 390,
     pillW: 95,  pillH: 33,
     zoneBox: [430, 360, 160, 110] as [number, number, number, number],
-    revealDelay: '0.1s',
-    revealThreshold: 0.1,
+    order: 1,
   },
   {
-    // Overlays the framed abstract painting on the wall. Placeholder — no
-    // destination yet.
-    id: 'projects',
-    label: 'projects',
-    href: '/projects',
-    imgX: 266, imgY: 176,
-    pillW: 128, pillH: 33,
-    zoneBox: [215, 20, 230, 345] as [number, number, number, number],
-    revealDelay: '0.2s',
-    revealThreshold: 0.2,
+    id: 'offbeat',
+    label: 'offbeat\ngreets',
+    href: '#',
+    imgX: 516,  imgY: 326,
+    pillW: 133, pillH: 50,
+    zoneBox: [350, 240, 260, 220] as [number, number, number, number],
+    order: 2,
+  },
+  {
+    id: 'portfolio',
+    label: 'portfolio',
+    href: '/portfolio',
+    imgX: 711,  imgY: 322,
+    pillW: 130, pillH: 33,
+    zoneBox: [580, 240, 250, 220] as [number, number, number, number],
+    order: 3,
+  },
+  {
+    id: 'blog',
+    label: 'blog',
+    href: '/thoughts',
+    imgX: 976,  imgY: 119,
+    pillW: 95,  pillH: 33,
+    zoneBox: [900, 0, 320, 480] as [number, number, number, number],
+    order: 4,
+  },
+  {
+    id: 'photo',
+    label: 'photo',
+    href: '/photography',
+    imgX: 1324, imgY: 187,
+    pillW: 95,  pillH: 33,
+    zoneBox: [1200, 80, 252, 570] as [number, number, number, number],
+    order: 5,
+  },
+  {
+    id: 'tiktok',
+    label: 'tiktok',
+    href: '#',
+    imgX: 1117, imgY: 870, // yoga mat center — raised from 1002 so it's visible
+    pillW: 95,  pillH: 33,
+    zoneBox: [900, 820, 330, 240] as [number, number, number, number],
+    order: 6,
+    belowFold: true,
   },
 ]
+
+// Stagger step between pills in the load-time bloom sequence.
+const BLOOM_STEP_S = 0.09
+// Let the painting develop for a beat before the first pill blooms.
+const BLOOM_BASE_DELAY_S = 0.55
 
 // ─── Shader video overlays ─────────────────────────────────────────────────────
 // Drop screen recordings into public/videos/
@@ -155,7 +155,7 @@ const MOBILE_NAV = [
   { id: 'blog',      label: 'blog',            href: '/thoughts',    imgX: 330, imgY: 70 },
   { id: 'photo',     label: 'photo',           href: '/photography', imgX: 56,  imgY: 430 },
   { id: 'offbeat',   label: 'offbeat\ngreets', href: '#',            imgX: 300, imgY: 430 },
-  { id: 'portfolio', label: 'portfolio',       href: '#',            imgX: 150, imgY: 556 },
+  { id: 'portfolio', label: 'portfolio',       href: '/portfolio',   imgX: 150, imgY: 556 },
   { id: 'about',     label: 'about',           href: '#',            imgX: 382, imgY: 620 },
   { id: 'tiktok',    label: 'tiktok',          href: '#',            imgX: 250, imgY: 930 },
 ]
@@ -199,7 +199,7 @@ function MobileHome() {
             backgroundPosition: 'center',
           }}
         >
-          {MOBILE_NAV.map((item) => {
+          {MOBILE_NAV.map((item, i) => {
             const hasLink = item.href !== '#'
             return (
               <Link
@@ -220,6 +220,8 @@ function MobileHome() {
                   whiteSpace: item.id === 'offbeat' ? 'pre' : 'nowrap',
                   textAlign: 'center',
                   zIndex: 15,
+                  opacity: 0,
+                  animation: `pill-bloom 0.85s cubic-bezier(0.22, 1, 0.36, 1) ${(0.4 + i * 0.09).toFixed(2)}s both`,
                 }}
               >
                 {item.label}
@@ -293,27 +295,126 @@ function MobileHome() {
   )
 }
 
+// ─── One-shot in-view reveal ────────────────────────────────────────────────────
+// For pills that start below the fold: bloom in the first time they scroll
+// into view, then stay put forever (no re-hiding on scroll-up).
+function useRevealOnce<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [revealed, setRevealed] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRevealed(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.4 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return { ref, revealed }
+}
+
+// ─── One nav pill ───────────────────────────────────────────────────────────────
+// Blooms in once (on load for most, on first scroll-into-view for belowFold),
+// then responds to hover with a springy lift — no delays, no re-hiding.
+function NavPill({
+  item,
+  hovered,
+}: {
+  item: (typeof NAV_ITEMS)[number]
+  hovered: boolean
+}) {
+  const { ref, revealed } = useRevealOnce<HTMLDivElement>()
+  const belowFold = 'belowFold' in item && item.belowFold
+  const shouldBloom = belowFold ? revealed : true
+  const delay = belowFold
+    ? '0.1s'
+    : `${(BLOOM_BASE_DELAY_S + item.order * BLOOM_STEP_S).toFixed(2)}s`
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'absolute',
+        left: ix(item.imgX),
+        top: iy(item.imgY),
+        width: ix(item.pillW),
+        height: iy(item.pillH),
+        zIndex: 15,
+        pointerEvents: 'none',
+        opacity: 0,
+        animation: shouldBloom
+          ? `pill-bloom 0.85s cubic-bezier(0.22, 1, 0.36, 1) ${delay} both`
+          : undefined,
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#ffffff',
+          boxShadow: hovered
+            ? '0 6px 18px rgba(30, 30, 60, 0.18)'
+            : '0 1px 4px rgba(30, 30, 60, 0.06)',
+          transform: hovered ? 'translateY(-3px) scale(1.06)' : 'translateY(0) scale(1)',
+          transition:
+            'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease',
+        }}
+      >
+        <span
+          className="stix"
+          style={{
+            fontSize: 'clamp(10px, 1.38vw, 20px)',
+            letterSpacing: '-0.02em',
+            lineHeight: 1.15,
+            color: '#000',
+            whiteSpace: item.id === 'offbeat' ? 'pre' : 'nowrap',
+            textAlign: 'center',
+          }}
+        >
+          {item.label}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ───────────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const isMobile = useIsMobile()
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [scrolled, setScrolled] = useState(false)
+  const [scrollable, setScrollable] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // The scroll hint should only appear when there is actually something to
+  // scroll to (short viewports), and fade as soon as the user moves.
   useEffect(() => {
-    const handle = () => {
+    const measure = () => {
       const el = containerRef.current
       if (!el) return
-      const maxScroll = Math.max(1, el.offsetHeight - window.innerHeight)
-      setScrollProgress(window.scrollY / maxScroll)
+      setScrollable(el.offsetHeight - window.innerHeight > 60)
     }
-    window.addEventListener('scroll', handle, { passive: true })
-    handle()
-    return () => window.removeEventListener('scroll', handle)
+    const handleScroll = () => setScrolled(window.scrollY > 24)
+    measure()
+    handleScroll()
+    window.addEventListener('resize', measure)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
-
-  const isVisible = (item: typeof NAV_ITEMS[0]) =>
-    scrollProgress >= item.revealThreshold || hoveredId === item.id
 
   if (isMobile) return <MobileHome />
 
@@ -331,6 +432,7 @@ export default function HomePage() {
         backgroundPosition: 'center top',
         backgroundRepeat: 'no-repeat',
         overflow: 'hidden',
+        animation: 'room-develop 1.1s ease-out both',
       }}
     >
       {/* Subtle top vignette */}
@@ -445,7 +547,6 @@ export default function HomePage() {
 
       {/* ── Nav zones + white pill labels ─────────────────────────────────── */}
       {NAV_ITEMS.map((item) => {
-        const visible = isVisible(item)
         const hasLink = item.href !== '#'
         const [zx, zy, zw, zh] = item.zoneBox
 
@@ -470,44 +571,12 @@ export default function HomePage() {
               aria-label={item.label.replace('\n', ' ')}
             />
 
-            {/* White pill — text centered inside ── */}
-            <div
-              style={{
-                position: 'absolute',
-                left: ix(item.imgX),
-                top: iy(item.imgY),
-                width: ix(item.pillW),
-                height: iy(item.pillH),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: '#ffffff',
-                zIndex: 15,
-                pointerEvents: 'none',
-                opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0)' : 'translateY(5px)',
-                transition: `opacity 0.45s ease ${item.revealDelay}, transform 0.45s ease ${item.revealDelay}`,
-              }}
-            >
-              <span
-                className="stix"
-                style={{
-                  fontSize: 'clamp(10px, 1.38vw, 20px)',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.15,
-                  color: '#000',
-                  whiteSpace: item.id === 'offbeat' ? 'pre' : 'nowrap',
-                  textAlign: 'center',
-                }}
-              >
-                {item.label}
-              </span>
-            </div>
+            <NavPill item={item} hovered={hoveredId === item.id} />
           </div>
         )
       })}
 
-      {/* ── Scroll hint ────────────────────────────────────────────────────── */}
+      {/* ── Scroll hint — only when the painting extends past the viewport ── */}
       <div
         style={{
           position: 'fixed',   // fixed so it stays visible at the bottom of viewport
@@ -516,7 +585,7 @@ export default function HomePage() {
           transform: 'translateX(-50%)',
           zIndex: 10,
           pointerEvents: 'none',
-          opacity: scrollProgress < 0.03 ? 0.45 : 0,
+          opacity: scrollable && !scrolled ? 0.45 : 0,
           transition: 'opacity 0.6s ease',
         }}
       >

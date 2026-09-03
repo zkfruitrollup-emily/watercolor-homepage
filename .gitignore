@@ -35,3 +35,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# source scans + working files — 1.4GB of NEF/TIF, far past GitHub's limits.
+# Web-ready exports live in public/images/.
+/Photos
+*.tgz

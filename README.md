@@ -37,6 +37,31 @@ This shows red outlines so you can drag-adjust each percentage until zones line 
 
 ---
 
+## Adding a project to the gallery wall
+
+Projects hang as framed paintings on `/projects`. Open `app/projects/page.tsx`
+and add an entry to the `PROJECTS` array:
+
+```ts
+{
+  id: 'unique-id',
+  title: 'my new thing',
+  placard: 'web app · one-line museum placard',
+  rgb: [227, 154, 74],        // color of the abstract watercolor artwork
+  w: 200, h: 150,             // artwork size (px) — mix portrait & landscape
+  tilt: -1.5,                 // resting crookedness; straightens on hover
+  hang: 20,                   // how far below its neighbours it hangs
+  string: 34,                 // string length between nail and frame
+  frame: '#8a6a4f',           // frame color (wood, gold, ink, slate…)
+  seed: 7,                    // any number — varies the abstract painting
+  href: 'https://…',          // link frame — or use `images: […]` for a
+                              // lightbox gallery (first image hangs in the
+                              // frame), or `to: '/route'` for internal pages
+}
+```
+
+---
+
 ## Adding blog posts
 
 Open `app/thoughts/page.tsx` and add entries to the `POSTS` array:
