@@ -42,7 +42,7 @@ const NAV_ITEMS = [
     // back cushions. Placeholder — no destination yet.
     id: 'about',
     label: 'about',
-    href: '#',
+    href: '/about',
     imgX: 460, imgY: 390,
     pillW: 95,  pillH: 33,
     zoneBox: [430, 360, 160, 110] as [number, number, number, number],
@@ -156,7 +156,7 @@ const MOBILE_NAV = [
   { id: 'photo',     label: 'photo',           href: '/photography', imgX: 56,  imgY: 430 },
   { id: 'offbeat',   label: 'offbeat\ngreets', href: '#',            imgX: 300, imgY: 430 },
   { id: 'portfolio', label: 'portfolio',       href: '/portfolio',   imgX: 150, imgY: 556 },
-  { id: 'about',     label: 'about',           href: '#',            imgX: 382, imgY: 620 },
+  { id: 'about',     label: 'about',           href: '/about',       imgX: 382, imgY: 620 },
   { id: 'tiktok',    label: 'tiktok',          href: '#',            imgX: 250, imgY: 930 },
 ]
 
